@@ -7,7 +7,9 @@ bi2=InlineKeyboardButton(text='👎',
                          callback_data='dislike')
 bi3=InlineKeyboardButton(text='🔄',
                          callback_data='next')
-kbi.add(bi1,bi2)
+bi4=InlineKeyboardButton(text='⬅️',
+                         callback_data='main')
+kbi.add(bi1,bi2,bi3).add(bi4)
 
 
 kb = ReplyKeyboardMarkup(resize_keyboard=True)

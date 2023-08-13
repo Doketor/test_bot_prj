@@ -8,7 +8,15 @@ from keyboard import kb, kb2, kbi
 bot = Bot(TOKEN_API)
 dp = Dispatcher(bot)
 
-list_url = ['https://klike.net/uploads/posts/2022-06/1654842644_4.jpg','https://w.forfun.com/fetch/70/7047b702475924ba8f8044b5b5ca56ba.jpeg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_0CpUf0gItQwK6pm0oKMmkzWj53nUGtY427GQj_Ic&s']
+list_url = ['https://klike.net/uploads/posts/2022-06/1654842644_4.jpg',
+            'https://w.forfun.com/fetch/70/7047b702475924ba8f8044b5b5ca56ba.jpeg',
+            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_0CpUf0gItQwK6pm0oKMmkzWj53nUGtY427GQj_Ic&s']
+
+random_choice=random.choice(list_url)
+
+photos = dict(zip(list_url, ['1 котик', "2 котик", "3 котик"]))
+
+flag = False
 
 async def on_startup(_):
     print('Start bot')
@@ -50,18 +58,38 @@ async def open_kb(message: types.Message):
 
 @dp.message_handler(Text(equals='random'))
 async def send_random_photo(message: types.Message):
+    random_choice=random.choice(list_url)
     await bot.send_photo(chat_id=message.chat.id,
-                         photo=random.choice(list_url),
-                        caption='рандомный котик')
+                         photo=random_choice,
+                        caption=photos[random_choice],
+                         reply_markup=kbi)
     await message.delete()
 
 
 @dp.callback_query_handler()
 async def vote_callback(callback: types.CallbackQuery):
+    global random_choice
+    global flag
     if callback.data == 'like':
-        await callback.answer(text='тебе нравятся котики')
+        if not flag:
+            await callback.answer(text='вам понравилось')
+            flag = not flag
+        else:
+            await callback.answer('вы уже лайкали')
     elif callback.data == 'dislike':
         await callback.answer(text='тебе не нравятся котики')
+    elif callback.data == 'main':
+        await callback.message.answer(text='главное меню',
+                                      reply_markup=kb)
+        await callback.message.delete()
+        await callback.answer()
+    else:
+        random_choice = random.choice(list(filter(lambda x: x != random_choice, list_url)))
+        await callback.message.edit_media(types.InputMedia(media=random_choice,
+                                          type='photo',
+                                          caption=photos[random_choice]),
+                                          reply_markup=kbi)
+        await callback.answer()
 
 
 
